@@ -54,6 +54,16 @@ var authorize = function(req, res, next) {
   }
 }
 
+function createToken(user){
+  const myToken = jwt.sign(
+    { user: user.id },
+    'secretwife',
+    { expiresIn: 24 * 60 * 60 }
+  );
+
+  return myToken;
+}
+
 router.get('/users', authorize, function(req, res){
   User.findAll().then(function(users){
     res.send(users)
@@ -102,25 +112,44 @@ router.post('/signup', function(req, res){
   }).then(function(user){
     if(!user){
       User.create(req.body).then(function(user){
-        const myToken = jwt.sign(
-          { user: user.id },
-          'secretwife',
-          { expiresIn: 24 * 60 * 60 }
-        );
         res.send(
           200,
           {
-            'token': myToken,
+            'token': createToken(user),
             'userId': user.id,
             'username': user.username
           }
         );
       })
+    }else{
+      res.send("User Already Exists");
     }
   })
   .catch(function (err) {
     res.send('Error creating user: ', err.message);
   });
 }); 
+
+router.post('/signin', function(req, res){
+  User.findOne({
+    where: {
+      username: req.body.username,
+      password: req.body.password
+    }
+  }).then(function(user){
+    if(user){
+      res.send(
+        200,
+        {
+          'token': createToken(user),
+          'userId': user.id,
+          'username': user.username
+        }
+      );
+    }else{
+      res.send('Wrong username or password')
+    }
+  })
+});
 
 module.exports = router;
