@@ -1,43 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const User = require('../schema/User');
 
-const Sequelize = require('sequelize');
-const sequelize = new Sequelize('kursus-dw-1', 'root', '', {
-  host: 'localhost',
-  dialect: 'mysql',
-
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  },
-});
-
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('Connection has been established successfully.');
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
-  });
-
-const User = sequelize.define('users', {
-  username: {
-    type: Sequelize.STRING
-  },
-  password: {
-    type: Sequelize.STRING
-  },
-  age: {
-    type: Sequelize.INTEGER
-  },
-});
-
-//middleware authorize
-var authorize = function(req, res, next) {
+//middleware authentication
+var authenticate = function(req, res, next) {
  var token = req.body.token || req.headers["x-access-token"];
   if (token) {
    jwt.verify(token, 'secretwife', function(err, decoded) {
@@ -64,7 +31,7 @@ function createToken(user){
   return myToken;
 }
 
-router.get('/users', authorize, function(req, res){
+router.get('/users', authenticate, function(req, res){
   User.findAll().then(function(users){
     res.send(users)
   });
