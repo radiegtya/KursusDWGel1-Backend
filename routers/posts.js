@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 var multer  = require('multer');
 
+const sequelize = require('../sequelize');
 const Post = require('../schema/Post');
 const User = require('../schema/User');
 
@@ -48,6 +49,19 @@ router.get('/posts', function(req, res){
     })
   }
 
+});
+
+router.get('/posts/count/:userId', function(req, res){
+  const userId = req.params.userId;
+
+  Post.findOne({
+    attributes: [[sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+    where: {
+      userId: userId
+    }
+  }).then(function(result){
+    res.send(result);
+  })
 });
 
 router.post('/posts', upload.single('photo'), function(req, res){

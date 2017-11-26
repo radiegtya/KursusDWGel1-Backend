@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+var multer  = require('multer');
+
 const User = require('../schema/User');
+
 
 //middleware authentication
 var authenticate = function(req, res, next) {
@@ -30,6 +33,17 @@ function createToken(user){
 
   return myToken;
 }
+
+//multer config
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  }
+})
+const upload = multer({storage: storage});
 
 router.get('/users', authenticate, function(req, res){
   User.findAll().then(function(users){
@@ -63,8 +77,12 @@ router.delete('/users/:id', function(req, res){
   })
 })
 
-router.patch('/users/:id', function(req, res){
-  User.update(req.body, {
+router.patch('/users/:id', upload.single('profilePicture'), function(req, res){
+  const fullUrl = req.protocol + '://' + req.get('host');
+  let body = req.body;
+  body.profilePicture = fullUrl + "/" + req.file.path;
+
+  User.update(body, {
     where: {
       id: req.params.id
     }

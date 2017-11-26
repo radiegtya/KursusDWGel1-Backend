@@ -11,6 +11,9 @@ const User = sequelize.define('users', {
   age: {
     type: Sequelize.INTEGER
   },
+  profilePicture: {
+    type: Sequelize.STRING
+  }
 });
 
 module.exports = User;
