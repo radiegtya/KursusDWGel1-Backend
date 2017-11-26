@@ -9,6 +9,9 @@ const Post = sequelize.define('posts', {
   imageUrl: {
     type: Sequelize.STRING
   },
+  text: {
+    type: Sequelize.STRING
+  },
   likeCount: {
     type: Sequelize.INTEGER
   },

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 var multer  = require('multer');
+const Sequelize = require('sequelize');
 
 const sequelize = require('../sequelize');
 const Post = require('../schema/Post');
@@ -20,6 +21,8 @@ const storage = multer.diskStorage({
 const upload = multer({storage: storage});
 
 router.get('/posts', function(req, res){
+  const Op = Sequelize.Op;
+
   const include = [
     {model: User}
   ];
@@ -28,15 +31,24 @@ router.get('/posts', function(req, res){
     ["id", 'DESC']
   ];
 
-  if(req.query && req.query.userId){
+  if(req.query){
+
+
     const userId = req.query.userId;
+    const text = req.query.text;
+    let where = {};
+    if(userId)
+      where.userId = userId;
+    if(text){
+      where.text = {
+        [Op.like]: '%'+ text + '%', 
+      }
+    }
 
     Post.findAll({
       include: include,
       order: order,
-      where: {
-        userId: userId
-      }
+      where: where
     }).then(function(posts){
       res.send(posts)
     })
