@@ -21,6 +21,7 @@ sequelize
 
 app.use('/api', require('./routers/users'));
 app.use('/api', require('./routers/posts'));
+app.use('/api', require('./routers/comments'));
 
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
