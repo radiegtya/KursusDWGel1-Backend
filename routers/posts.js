@@ -7,6 +7,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../sequelize');
 const Post = require('../schema/Post');
 const User = require('../schema/User');
+const Comment = require('../schema/Comment');
 
 
 //multer config
@@ -24,7 +25,12 @@ router.get('/posts', function(req, res){
   const Op = Sequelize.Op;
 
   const include = [
-    {model: User}
+    {model: User},
+    {
+      model: Comment,
+      limit: 2,
+      include: [{model: User}]
+    }
   ];
 
   const order = [
@@ -41,7 +47,7 @@ router.get('/posts', function(req, res){
       where.userId = userId;
     if(text){
       where.text = {
-        [Op.like]: '%'+ text + '%', 
+        [Op.like]: '%'+ text + '%',
       }
     }
 
@@ -85,5 +91,15 @@ router.post('/posts', upload.single('photo'), function(req, res){
     res.send(post);
   })
 });
+
+router.patch('/posts/:id', function(req, res){
+  Post.update(req.body, {
+    where: {
+      id: req.params.id
+    }
+  }).then(function(post){
+    res.send(post)
+  })
+})
 
 module.exports = router;
