@@ -1,25 +1,15 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../sequelize');
 
-const Post = require('./Post');
-const User = require('./User');
-
 const Follow = sequelize.define('follows', {
-  userId: {
-    type: Sequelize.INTEGER,
-    allowNull: true
-  },
-  activity: {
+  //is userId that has this data
+  ownerId: {
     type: Sequelize.STRING
   },
-  postId: {
-    type: Sequelize.INTEGER,
-    allowNull: true
+  //is userId that followed by this ownerId
+  followedId: {
+    type: Sequelize.STRING
   }
 });
-
-Follow.belongsTo(Post, {foreignKey: 'postId', targetKey: 'id'});
-Follow.belongsTo(User, {foreignKey: 'userId', targetKey: 'id'});
-Post.hasMany(Follow, {foreignKey: 'postId', sourceKey: 'id'});
 
 module.exports = Follow;
