@@ -8,6 +8,7 @@ const sequelize = require('../sequelize');
 const Post = require('../schema/Post');
 const User = require('../schema/User');
 const Comment = require('../schema/Comment');
+const Follow = require('../schema/Follow');
 
 
 //multer config
@@ -67,6 +68,43 @@ router.get('/posts', function(req, res){
     })
   }
 
+});
+
+router.get('/posts/followed/:ownerId', function(req, res){
+  const Op = Sequelize.Op;
+
+  //get array list of followedId
+  Follow.findAll({
+    where: {
+      ownerId: req.params.ownerId
+    }
+  }).then(function(follows){
+    let followedIds = [];
+    let i = 0;
+    follows.forEach(function(follow){
+      followedIds[i] = follow.followedId;
+      i++;
+    });
+
+    //get all posts by userId in followedIds
+    Post.findAll({
+      where: {
+        userId: {
+          [Op.in]: followedIds
+        }
+      },
+      include: [
+        {model: User},
+        {
+          model: Comment,
+          limit: 2,
+          include: [{model: User}]
+        }
+      ]
+    }).then(function(posts){
+      res.send(posts)
+    })
+  });
 });
 
 router.get('/posts/count/:userId', function(req, res){
